@@ -28,7 +28,7 @@ namespace N503::Core::Event
         {
             std::lock_guard const lock{ m_Mutex };
 
-            m_Container.push(
+            m_Buffer[m_BufferIndex].Container.push(
             {
                 .Packet = std::move(packet),
                 .Signal = nullptr,
@@ -48,16 +48,16 @@ namespace N503::Core::Event
         {
             std::lock_guard const lock{ m_Mutex };
 
-            if (!m_Container.empty())
+            if (!m_Buffer[m_BufferIndex].Container.empty())
             {
-                if (auto& tail = m_Container.back().Packet; tail.index() == packet.index())
+                if (auto& tail = m_Buffer[m_BufferIndex].Container.back().Packet; tail.index() == packet.index())
                 {
                     tail = std::move(packet);
                     return;
                 }
             }
 
-            m_Container.push(
+            m_Buffer[m_BufferIndex].Container.push(
             {
                 .Packet = std::move(packet),
                 .Signal = nullptr,
@@ -73,11 +73,17 @@ namespace N503::Core::Event
     [[nodiscard]]
     auto EventQueue::PopAll() -> Container
     {
-        auto container = Container{ Strategy{ m_Allocator } };
-        {
-            std::lock_guard const lock{ m_Mutex };
-            std::swap(m_Container, container);
-        }
+        std::lock_guard const lock{ m_Mutex };
+
+        // UIスレッドで溜めたデータを「Allocatorごと」奪い去る
+        auto container = std::move(m_Buffer[m_BufferIndex].Container);
+
+        // 空になった場所に、正しい Allocator（Storageへのポインタ）を再装填
+        m_Buffer[m_BufferIndex].Container = Container{ m_Buffer[m_BufferIndex].Allocator };
+
+        // 次の Push 用にインデックスを切り替える
+        m_BufferIndex = (m_BufferIndex + 1) % m_Buffer.size();
+
         return container;
     }
 

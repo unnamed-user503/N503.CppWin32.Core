@@ -10,6 +10,7 @@
 // C++ Standard Libraries
 #include <array>
 #include <cstddef>
+#include <cstdint>
 #include <list>
 #include <mutex>
 #include <queue>
@@ -20,6 +21,7 @@
 // Platform/Thirdparty Libraries
 #include <Windows.h>
 #include <wil/resource.h>
+#include <algorithm>
 
 namespace N503::Core::Event
 {
@@ -56,15 +58,12 @@ namespace N503::Core::Event
             /// @brief 
             /// @param mutex 
             /// @param queue 
-            EventBorrower(std::mutex& mutex, Container& queue) : m_Lock(mutex)
+            EventBorrower(std::unique_lock<std::mutex>&& lock, Container& queue) : m_Lock(std::move(lock))
             {
-#pragma warning(push)
-#pragma warning(disable: 26115) // mutexは意図的に参照で共有しているので警告を無視します
                 if (!queue.empty() && std::holds_alternative<TDataType>(queue.back().Packet))
                 {
                     m_Target = &std::get<TDataType>(queue.back().Packet);
                 }
-#pragma warning(pop)
             }
 
             /// @brief 
@@ -91,7 +90,7 @@ namespace N503::Core::Event
 
         private:
             /// @brief 
-            std::lock_guard<std::mutex> m_Lock;
+            std::unique_lock<std::mutex> m_Lock;
 
             /// @brief 
             TDataType* m_Target = nullptr;
@@ -152,18 +151,32 @@ namespace N503::Core::Event
         template <typename TDataType>
         auto TryBorrowBack() -> EventBorrower<TDataType>
         {
-            return EventBorrower<TDataType>{ m_Mutex, m_Container };
+            // ロックを奪取する
+            std::unique_lock<std::mutex> lock{ m_Mutex };
+
+            // ロックした状態で Container を特定し、lock ごと Borrower に渡す
+            return EventBorrower<TDataType>{ std::move(lock), m_Buffer[m_BufferIndex].Container };
         }
 
     private:
         /// @brief 
-        Storage m_Storage{ 4096 };  ///< Allocator / Container より先に宣言する必要がある事に注意
+        struct Buffer
+        {
+            /// @brief 
+            typename EventQueue::Storage Storage{ 4096 };  ///< Allocator より先に宣言する必要がある事に注意
+
+            /// @brief 
+            typename EventQueue::Allocator Allocator{ &Storage };  ///< Container より先に宣言する必要がある事に注意
+
+            /// @brief 
+            typename EventQueue::Container Container{ Allocator };
+        };
 
         /// @brief 
-        Allocator m_Allocator{ &m_Storage };
+        std::array<Buffer, 2> m_Buffer{};
 
         /// @brief 
-        Container m_Container{ m_Allocator };
+        std::uint32_t m_BufferIndex{ 0 };
 
         /// @brief 
         wil::unique_event_nothrow m_WakeupEvent{ ::CreateEventA(nullptr, FALSE, FALSE, nullptr) };
