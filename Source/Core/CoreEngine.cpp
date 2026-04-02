@@ -7,20 +7,12 @@
 #include "Event/EventDispatcher.hpp"
 #include "Message/MessageDispatcher.hpp"
 
-// External Project
-
 // C++ Standard Libraries
 #include <memory>
 #include <semaphore>
 #include <stop_token>
 #include <thread>
 #include <utility>
-
-#ifdef _DEBUG
-#include <string>
-#include <format>
-#include <iostream>
-#endif
 
 // Platform/Thirdparty Libraries
 #include <Windows.h>
@@ -69,10 +61,7 @@ namespace N503::Core
 
             while (!stopToken.stop_requested())
             {
-                std::cout << "[Event] Enter: WaitForMultipleObjects()" << std::endl;
                 auto result = ::WaitForMultipleObjects(static_cast<DWORD>(wakeupHandles.size()), wakeupHandles.begin(), TRUE, INFINITE);
-                std::cout << "[Event] Leave: WaitForMultipleObjects()" << std::endl;
-
                 eventDispatcher.Dispatch(*m_EventQueue.get());
             }
         });

@@ -3,9 +3,6 @@
 // Internal Project
 #include "Data/EventPacket.hpp"
 
-// C++ Standard Libraries
-#include <semaphore>
-
 // Platform/Thirdparty Libraries
 #include <Windows.h>
 
@@ -17,9 +14,6 @@ namespace N503::Core::Event
     {
         /// @brief 
         Data::EventPacket Packet;
-
-        /// @brief 
-        std::binary_semaphore* Signal = nullptr;
 
         /// @brief 
         HWND Target = nullptr;

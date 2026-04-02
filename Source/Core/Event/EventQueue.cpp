@@ -5,13 +5,16 @@
 #include "Data/EventPacket.hpp"
 #include "EventEnvelope.hpp"
 
-// External Project
-
 // C++ Standard Libraries
-#include <list>
+#include <cstddef>
 #include <mutex>
 #include <queue>
 #include <utility>
+
+#ifdef _DEBUG
+#include <format>
+#include <string>
+#endif
 
 // Platform/Thirdparty Libraries
 #include <Windows.h>
@@ -25,15 +28,27 @@ namespace N503::Core::Event
     /// @return 
     auto EventQueue::Push(HWND target, Data::EventPacket&& packet) -> void
     {
+#ifdef _DEBUG
+        {
+            const std::size_t currentSize = m_Buffer[m_BufferIndex].Container.size();
+            const std::size_t capacity = 4096; // プールのサイズ
+
+            if (currentSize >= capacity * 0.8) // 80%を超えたら警告
+            {
+                ::OutputDebugStringA(std::format("EventQueue is congesting! Current: {}, TypeIndex: {}\n", currentSize, packet.index()).data());
+            }
+        }
+#endif
         {
             std::lock_guard const lock{ m_Mutex };
 
-            m_Buffer[m_BufferIndex].Container.push(
+            auto envelope = EventEnvelope
             {
                 .Packet = std::move(packet),
-                .Signal = nullptr,
                 .Target = target
-            });
+            };
+
+            m_Buffer[m_BufferIndex].Container.push(std::move(envelope));
         }
 
         m_WakeupEvent.SetEvent();
@@ -45,24 +60,38 @@ namespace N503::Core::Event
     /// @return 
     auto EventQueue::PushOrUpdate(HWND target, Data::EventPacket&& packet) -> void
     {
+#ifdef _DEBUG
+        {
+            const std::size_t currentSize = m_Buffer[m_BufferIndex].Container.size();
+            const std::size_t capacity = 4096; // プールのサイズ
+
+            if (currentSize >= capacity * 0.8) // 80%を超えたら警告
+            {
+                ::OutputDebugStringA(std::format("EventQueue is congesting! Current: {}, TypeIndex: {}\n", currentSize, packet.index()).data());
+            }
+        }
+#endif
         {
             std::lock_guard const lock{ m_Mutex };
 
             if (!m_Buffer[m_BufferIndex].Container.empty())
             {
-                if (auto& tail = m_Buffer[m_BufferIndex].Container.back().Packet; tail.index() == packet.index())
+                auto& tail = m_Buffer[m_BufferIndex].Container.back().Packet;
+
+                if (tail.index() == packet.index())
                 {
                     tail = std::move(packet);
                     return;
                 }
             }
 
-            m_Buffer[m_BufferIndex].Container.push(
+            auto envelope = EventEnvelope
             {
                 .Packet = std::move(packet),
-                .Signal = nullptr,
                 .Target = target
-            });
+            };
+
+            m_Buffer[m_BufferIndex].Container.push(std::move(envelope));
         }
 
         m_WakeupEvent.SetEvent();

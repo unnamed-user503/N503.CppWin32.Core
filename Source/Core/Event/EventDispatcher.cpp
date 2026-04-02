@@ -13,8 +13,6 @@
 
 // C++ Standard Libraries
 #include <algorithm>
-#include <cassert>
-#include <cstdint>
 #include <type_traits>
 #include <utility>
 #include <variant>
@@ -53,11 +51,6 @@ namespace N503::Core::Event
             };
 
             std::visit(delegate, event.Packet);
-
-            if (event.Signal)
-            {
-                event.Signal->release();
-            }
 
             queue.pop();
         }

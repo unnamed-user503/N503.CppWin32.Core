@@ -6,9 +6,15 @@
 #include "Packets/CommandPacket.hpp"
 
 // C++ Standard Libraries
+#include <cstddef>
 #include <queue>
 #include <semaphore>
 #include <utility>
+
+#ifdef _DEBUG
+#include <format>
+#include <string>
+#endif
 
 // Platform/Thirdparty Libraries
 #include <Windows.h>
@@ -21,6 +27,17 @@ namespace N503::Core::Command
     /// @return 
     auto CommandQueue::Push(Packets::CommandPacket&& packet) -> void
     {
+#ifdef _DEBUG
+        {
+            const std::size_t currentSize = m_Container.size();
+            const std::size_t capacity = 4096; // プールのサイズ
+
+            if (currentSize > capacity * 0.8) // 80%を超えたら警告
+            {
+                ::OutputDebugStringA(std::format("CommandQueue is congesting! Current: {}, TypeIndex: {}\n", currentSize, packet.index()).data());
+            }
+        }
+#endif
         {
             std::lock_guard const lock{ m_Mutex };
 
@@ -41,6 +58,17 @@ namespace N503::Core::Command
     {
         std::binary_semaphore signal{ 0 };
 
+#ifdef _DEBUG
+        {
+            const std::size_t currentSize = m_Container.size();
+            const std::size_t capacity = 4096; // プールのサイズ
+
+            if (currentSize > capacity * 0.8) // 80%を超えたら警告
+            {
+                ::OutputDebugStringA(std::format("CommandQueue is congesting! Current: {}, TypeIndex: {}\n", currentSize, packet.index()).data());
+            }
+        }
+#endif
         {
             std::lock_guard const lock{ m_Mutex };
 

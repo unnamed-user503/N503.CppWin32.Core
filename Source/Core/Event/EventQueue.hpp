@@ -163,7 +163,7 @@ namespace N503::Core::Event
         struct Buffer
         {
             /// @brief 
-            typename EventQueue::Storage Storage{ 64 };  ///< Allocator より先に宣言する必要がある事に注意
+            typename EventQueue::Storage Storage{ 4096 };  ///< Allocator より先に宣言する必要がある事に注意
 
             /// @brief 
             typename EventQueue::Allocator Allocator{ &Storage };  ///< Container より先に宣言する必要がある事に注意
