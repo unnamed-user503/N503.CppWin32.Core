@@ -82,7 +82,7 @@ namespace N503::Core
 
             while (!stopToken.stop_requested())
             {
-                auto result = ::WaitForMultipleObjects(static_cast<DWORD>(wakeupHandles.size()), wakeupHandles.begin(), TRUE, INFINITE);
+                auto result = ::WaitForMultipleObjects(static_cast<DWORD>(wakeupHandles.size()), wakeupHandles.begin(), FALSE, INFINITE);
 
                 eventDispatcher.Dispatch(*m_EventQueue.get());
             }
