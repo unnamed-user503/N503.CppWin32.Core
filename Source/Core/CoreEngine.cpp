@@ -8,11 +8,16 @@
 #include "Message/MessageDispatcher.hpp"
 
 // C++ Standard Libraries
+#include <atomic>
 #include <memory>
 #include <semaphore>
 #include <stop_token>
 #include <thread>
 #include <utility>
+
+#ifdef _DEBUG
+#include <cassert>
+#endif
 
 // Platform/Thirdparty Libraries
 #include <Windows.h>
@@ -51,6 +56,22 @@ namespace N503::Core
     /// @return 
     auto CoreEngine::Run(std::stop_token stopToken) -> void
     {
+        // 門番：初期状態は「旗が降りている」状態
+        static std::atomic_flag isRunning = ATOMIC_FLAG_INIT;
+
+        // test_and_set() は「旗を立てて、以前の状態を返す」というアトミックな操作
+        // すでに旗が立っていた（trueだった）なら、何もしないで帰る
+#ifdef _DEBUG
+        if (isRunning.test_and_set(std::memory_order_acquire))
+        {
+            assert(!"CoreEngine::Run is already running!");
+            return;
+        }
+#else
+        if (isRunning.test_and_set(std::memory_order_acquire)) return;
+#endif
+
+        // イベントスレッドの起動
         m_EventThread = std::jthread([this](std::stop_token stopToken)
         {
             using EventDispatcher = Event::EventDispatcher;
@@ -62,10 +83,12 @@ namespace N503::Core
             while (!stopToken.stop_requested())
             {
                 auto result = ::WaitForMultipleObjects(static_cast<DWORD>(wakeupHandles.size()), wakeupHandles.begin(), TRUE, INFINITE);
+
                 eventDispatcher.Dispatch(*m_EventQueue.get());
             }
         });
 
+        // コマンドキューとOSメッセージの処理
         using CommandDispatcher = Command::CommandDispatcher;
         using MessageDispatcher = Message::MessageDispatcher;
 
@@ -76,13 +99,10 @@ namespace N503::Core
 
         while (!stopToken.stop_requested())
         {
-            // Step 1: 
             auto result = ::MsgWaitForMultipleObjectsEx(static_cast<DWORD>(wakeupHandles.size()), wakeupHandles.begin(), INFINITE, QS_ALLINPUT, MWMO_INPUTAVAILABLE);
 
-            // Step 2: 
             commandDispatcher.Dispatch(*m_CommandQueue.get());
 
-            // Step 3:
             if (!messageDispatcher.Dispatch())
             {
                 break;
