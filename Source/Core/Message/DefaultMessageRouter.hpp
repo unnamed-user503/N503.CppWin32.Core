@@ -4,6 +4,7 @@
 #include "MessageRouter.hpp"
 #include "Processors/DefaultWindowProcedureProcessor.hpp"
 #include "Processors/KeyboardMessageTranslator.hpp"
+#include "Processors/MessageInterruptProcessor.hpp"
 #include "Processors/MouseMessageTranslator.hpp"
 #include "Processors/SystemMessageTranslator.hpp"
 #include "Processors/WindowEntityBindProcessor.hpp"
@@ -18,6 +19,7 @@ namespace N503::Core::Message
         Processors::WindowLifecycleTracker,
         Processors::WindowEntityBindProcessor,
         Processors::DefaultWindowProcedureProcessor,
+        Processors::MessageInterruptProcessor,
         Processors::WindowMessageTranslator,
         Processors::MouseMessageTranslator,
         Processors::KeyboardMessageTranslator,
