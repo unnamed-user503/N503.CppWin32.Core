@@ -4,8 +4,8 @@
 // Internal Project
 #include "../Window_Entity.hpp"
 #include "EventQueue.hpp"
-#include <N503/Core/Window.hpp>
 #include <N503/Core/Event/Tag.hpp>
+#include <N503/Core/Window.hpp>
 
 // External Project
 #include <N503/Event.hpp>
@@ -13,13 +13,14 @@
 
 // C++ Standard Libraries
 #include <algorithm>
+#include <cassert>
 #include <cstdint>
+#include <type_traits>
 #include <utility>
 #include <variant>
 
 // Platform/Thirdparty Libraries
 #include <Windows.h>
-#include <type_traits>
 
 namespace N503::Core::Event
 {

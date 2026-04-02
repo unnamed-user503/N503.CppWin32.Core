@@ -84,9 +84,6 @@ namespace N503::Core
 
     private:
         /// @brief 
-        std::jthread m_UIThread;
-
-        /// @brief 
         std::unique_ptr<CommandQueue> m_CommandQueue;
 
         /// @brief 
@@ -94,6 +91,12 @@ namespace N503::Core
 
         /// @brief 
         std::unique_ptr<DefaultMessageRouter> m_MessageRouter;
+
+        /// @brief 
+        std::jthread m_UIThread;
+
+        /// @brief 
+        std::jthread m_EventThread;
     };
 
 } // namespace N503::Core

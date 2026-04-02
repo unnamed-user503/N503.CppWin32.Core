@@ -61,11 +61,14 @@ namespace N503::Core::Command
     [[nodiscard]]
     auto CommandQueue::PopAll() -> Container
     {
-        auto container = Container{ Strategy{ m_Allocator } };
-        {
-            std::lock_guard const lock{ m_Mutex };
-            std::swap(m_Container, container);
-        }
+        std::lock_guard const lock{ m_Mutex };
+
+        // UIスレッドで溜めたデータを「Allocatorごと」奪い去る
+        auto container = std::move(m_Container);
+
+        // 空になった場所に、正しい Allocator（Storageへのポインタ）を再装填
+        m_Container = Container{ m_Allocator };
+
         return container;
     }
 
