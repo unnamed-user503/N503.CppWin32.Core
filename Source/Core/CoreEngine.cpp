@@ -56,11 +56,10 @@ namespace N503::Core
     /// @return 
     auto CoreEngine::Run(std::stop_token stopToken) -> void
     {
-        // 門番：初期状態は「旗が降りている」状態
+        // スレッドが実行中の状態を表す
         static std::atomic_flag isRunning = ATOMIC_FLAG_INIT;
 
-        // test_and_set() は「旗を立てて、以前の状態を返す」というアトミックな操作
-        // すでに旗が立っていた（trueだった）なら、何もしないで帰る
+        // スレッドが実行中の状態の旗が立っていた場合何もしないで帰る
 #ifdef _DEBUG
         if (isRunning.test_and_set(std::memory_order_acquire))
         {
