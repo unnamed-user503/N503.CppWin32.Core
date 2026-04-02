@@ -2,6 +2,7 @@
 
 // Internal Project
 #include "Command/CommandQueue.hpp"
+#include "Command/CommandExecutor.hpp"
 #include "Event/EventQueue.hpp"
 #include "Message/DefaultMessageRouter.hpp"
 
@@ -22,6 +23,9 @@ namespace N503::Core
     {
         /// @brief 
         using CommandQueue = Command::CommandQueue;
+
+        /// @brief 
+        using CommandExecutor = Command::CommandExecutor;
 
         /// @brief 
         using EventQueue = Event::EventQueue;
@@ -76,6 +80,10 @@ namespace N503::Core
 
         /// @brief 
         /// @return 
+        auto GetCommandExecutor() -> CommandExecutor&;
+
+        /// @brief 
+        /// @return 
         auto GetEventQueue() -> EventQueue&;
 
         /// @brief 
@@ -85,6 +93,9 @@ namespace N503::Core
     private:
         /// @brief 
         std::unique_ptr<CommandQueue> m_CommandQueue;
+
+        /// @brief 
+        std::unique_ptr<CommandExecutor> m_CommandExecutor;
 
         /// @brief 
         std::unique_ptr<EventQueue> m_EventQueue;

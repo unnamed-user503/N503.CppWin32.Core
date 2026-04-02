@@ -13,7 +13,7 @@ namespace N503::Core::Command
 
     /// @brief 
     /// @return 
-    auto CommandDispatcher::Dispatch(CommandQueue& commandQueue) -> void
+    auto CommandDispatcher::Dispatch(CommandQueue& commandQueue, CommandExecutor& commandExecutor) -> void
     {
         auto queue = commandQueue.PopAll();
 
@@ -21,9 +21,9 @@ namespace N503::Core::Command
         {
             auto command = queue.front();
 
-            auto delegate = [this](auto&& concreteCommand)
+            auto delegate = [this, &commandExecutor](auto&& concreteCommand)
             {
-                m_Executor(concreteCommand);
+                commandExecutor(concreteCommand);
             };
 
             std::visit(delegate, command.Packet);

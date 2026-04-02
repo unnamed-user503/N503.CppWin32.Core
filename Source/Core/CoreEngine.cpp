@@ -36,9 +36,10 @@ namespace N503::Core
     /// @brief 
     CoreEngine::CoreEngine()
     {
-        m_CommandQueue  = std::make_unique<CommandQueue>();
-        m_EventQueue    = std::make_unique<EventQueue>();
-        m_MessageRouter = std::make_unique<DefaultMessageRouter>();
+        m_CommandQueue    = std::make_unique<CommandQueue>();
+        m_CommandExecutor = std::make_unique<CommandExecutor>();
+        m_EventQueue      = std::make_unique<EventQueue>();
+        m_MessageRouter   = std::make_unique<DefaultMessageRouter>();
 
         std::binary_semaphore signal{ 0 };
 
@@ -100,7 +101,7 @@ namespace N503::Core
         {
             auto result = ::MsgWaitForMultipleObjectsEx(static_cast<DWORD>(wakeupHandles.size()), wakeupHandles.begin(), INFINITE, QS_ALLINPUT, MWMO_INPUTAVAILABLE);
 
-            commandDispatcher.Dispatch(*m_CommandQueue.get());
+            commandDispatcher.Dispatch(*m_CommandQueue.get(), *m_CommandExecutor.get());
 
             if (!messageDispatcher.Dispatch())
             {
@@ -134,6 +135,13 @@ namespace N503::Core
     auto CoreEngine::GetCommandQueue() -> CommandQueue&
     {
         return *m_CommandQueue;
+    }
+
+    /// @brief 
+    /// @return 
+    auto CoreEngine::GetCommandExecutor() -> CommandExecutor&
+    {
+        return *m_CommandExecutor;
     }
 
     /// @brief 

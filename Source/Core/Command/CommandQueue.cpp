@@ -103,6 +103,14 @@ namespace N503::Core::Command
     /// @brief 
     /// @return 
     [[nodiscard]]
+    auto CommandQueue::IsEmpty() -> bool
+    {
+        return m_Container.empty();
+    }
+
+    /// @brief 
+    /// @return 
+    [[nodiscard]]
     auto CommandQueue::GetWakeupEventHandle() const -> HANDLE
     {
         return m_WakeupEvent.get();

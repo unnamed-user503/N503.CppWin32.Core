@@ -38,12 +38,9 @@ namespace N503::Core::Command
     public:
         /// @brief 
         /// @param  
+        /// @param  
         /// @return 
-        auto Dispatch(CommandQueue&) -> void;
-
-    private:
-        /// @brief 
-        CommandExecutor m_Executor;
+        auto Dispatch(CommandQueue&, CommandExecutor&) -> void;
     };
 
 } // namespace N503::Core

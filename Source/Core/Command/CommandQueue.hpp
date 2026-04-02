@@ -86,6 +86,11 @@ namespace N503::Core::Command
         /// @brief 
         /// @return 
         [[nodiscard]]
+        auto IsEmpty() -> bool;
+
+        /// @brief 
+        /// @return 
+        [[nodiscard]]
         auto GetWakeupEventHandle() const -> HANDLE;
 
     public:
