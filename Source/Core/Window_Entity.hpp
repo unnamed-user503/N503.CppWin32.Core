@@ -9,12 +9,10 @@
 #include <N503/Memory.hpp>  // IWYU pragma: export
 
 // C++ Standard Libraries
-#include <cstdint>
 #include <memory>
-#include <string>
 
 // Platform/Thirdparty Libraries
-#include <wil/resource.h>
+#include <Windows.h>
 
 namespace N503::Core
 {
@@ -23,18 +21,9 @@ namespace N503::Core
     struct Window::Entity final
     {
         /// @brief 
-        wil::unique_hwnd m_Handle{ nullptr };
+        HWND m_Handle{ nullptr };
 
         // --- Cache ---
-
-        /// @brief 
-        std::string m_Title{ "" };
-
-        /// @brief 
-        std::uint32_t m_Width{ 0 };
-
-        /// @brief 
-        std::uint32_t m_Height{ 0 };
 
         // --- Events ---
 

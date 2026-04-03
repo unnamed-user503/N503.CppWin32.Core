@@ -30,7 +30,7 @@ namespace N503::Core
     /// @brief 
     Window::Window(std::string_view title, std::uint32_t width, std::uint32_t height)
     {
-        HWND handle = nullptr;
+        m_Entity = std::make_unique<Window::Entity>();
 
         auto packet = Command::Packets::CreateWindowCommand
         {
@@ -38,18 +38,19 @@ namespace N503::Core
             .Title  = title.data(),
             .Width  = width,
             .Height = height,
-            .Result = &handle
+            .Result = &m_Entity->m_Handle
         };
 
         CoreEngine::Instance().GetCommandQueue().PushSync(std::move(packet));
 
-        if (handle)
+        if (m_Entity->m_Handle)
         {
-            m_Entity = std::make_unique<Window::Entity>();
-            m_Entity->m_Handle.reset(handle);
-
             // Windowクラスのインスタンス化が出来ていない状態でWN_CREATEを受信できるようにするメリットがないのでここでポインタを埋め込むだけでよい。
-            ::SetWindowLongPtrW(handle, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(m_Entity.get()));
+            ::SetWindowLongPtrW(m_Entity->m_Handle, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(m_Entity.get()));
+        }
+        else
+        {
+            m_Entity.reset();
         }
     }
 
@@ -88,7 +89,7 @@ namespace N503::Core
 
         auto packet = Command::Packets::DestroyWindowCommand
         {
-            .Target = m_Entity->m_Handle.get(),
+            .Target = m_Entity->m_Handle,
         };
 
         CoreEngine::Instance().GetCommandQueue().Push(std::move(packet));
@@ -106,7 +107,7 @@ namespace N503::Core
 
         auto packet = Command::Packets::SetWindowTitleCommand
         {
-            .Target = m_Entity->m_Handle.get(),
+            .Target = m_Entity->m_Handle,
             .Title  = title.data()
         };
 
