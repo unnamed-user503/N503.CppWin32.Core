@@ -92,6 +92,9 @@ namespace N503::Core
             .Target = m_Entity->m_Handle,
         };
 
+        // 非同期処理でコマンドを投げるので、先にこちら側の操作を無効化できるように先にm_Handleをnullptrに設定する
+        m_Entity->m_Handle = nullptr;
+
         CoreEngine::Instance().GetCommandQueue().Push(std::move(packet));
     }
 
