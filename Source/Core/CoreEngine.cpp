@@ -104,17 +104,17 @@ namespace N503::Core
         {
             auto result = ::MsgWaitForMultipleObjectsEx(static_cast<DWORD>(wakeupHandles.size()), wakeupHandles.begin(), INFINITE, QS_ALLINPUT, MWMO_INPUTAVAILABLE);
 
+            if (result >= WAIT_OBJECT_0 && result < (WAIT_OBJECT_0 + wakeupHandles.size()))
+            {
+                commandDispatcher.Dispatch(*m_CommandQueue.get(), *m_CommandExecutor.get());
+            }
+
             if (result == WAIT_OBJECT_0 + wakeupHandles.size())
             {
                 if (!messageDispatcher.Dispatch())
                 {
                     break;
                 }
-            }
-
-            if (result >= WAIT_OBJECT_0 && result < (WAIT_OBJECT_0 + wakeupHandles.size()))
-            {
-                commandDispatcher.Dispatch(*m_CommandQueue.get(), *m_CommandExecutor.get());
             }
         }
 
