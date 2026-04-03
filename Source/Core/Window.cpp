@@ -74,7 +74,7 @@ namespace N503::Core
     /// @return 
     auto Window::WaitForQuit() -> void
     {
-        CoreEngine::Instance().AwaitUIThreadCompletion();
+        CoreEngine::Instance().AwaitThreadCompletion();
     }
 
     /// @brief 

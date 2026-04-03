@@ -72,7 +72,7 @@ namespace N503::Core
 
         /// @brief 
         /// @return 
-        auto AwaitUIThreadCompletion() -> void;
+        auto AwaitThreadCompletion() -> void;
 
         /// @brief 
         /// @return 

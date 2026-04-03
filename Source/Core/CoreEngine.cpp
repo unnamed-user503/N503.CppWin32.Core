@@ -82,9 +82,12 @@ namespace N503::Core
 
             while (!stopToken.stop_requested())
             {
-                auto result = ::WaitForMultipleObjects(static_cast<DWORD>(wakeupHandles.size()), wakeupHandles.begin(), FALSE, INFINITE);
+                auto result = ::WaitForMultipleObjectsEx(static_cast<DWORD>(wakeupHandles.size()), wakeupHandles.begin(), FALSE, INFINITE, FALSE);
 
-                eventDispatcher.Dispatch(*m_EventQueue.get());
+                if (result >= WAIT_OBJECT_0 && result < (WAIT_OBJECT_0 + wakeupHandles.size()))
+                {
+                    eventDispatcher.Dispatch(*m_EventQueue.get());
+                }
             }
         });
 
@@ -101,11 +104,17 @@ namespace N503::Core
         {
             auto result = ::MsgWaitForMultipleObjectsEx(static_cast<DWORD>(wakeupHandles.size()), wakeupHandles.begin(), INFINITE, QS_ALLINPUT, MWMO_INPUTAVAILABLE);
 
-            commandDispatcher.Dispatch(*m_CommandQueue.get(), *m_CommandExecutor.get());
-
-            if (!messageDispatcher.Dispatch())
+            if (result == WAIT_OBJECT_0 + wakeupHandles.size())
             {
-                break;
+                if (!messageDispatcher.Dispatch())
+                {
+                    break;
+                }
+            }
+
+            if (result >= WAIT_OBJECT_0 && result < (WAIT_OBJECT_0 + wakeupHandles.size()))
+            {
+                commandDispatcher.Dispatch(*m_CommandQueue.get(), *m_CommandExecutor.get());
             }
         }
 
@@ -118,11 +127,14 @@ namespace N503::Core
         {
             m_EventThread.join();
         }
+
+        // 再度Runメソッドを実行できるように旗を下す
+        isRunning.clear(std::memory_order_release);
     }
 
     /// @brief 
     /// @return 
-    auto CoreEngine::AwaitUIThreadCompletion() -> void
+    auto CoreEngine::AwaitThreadCompletion() -> void
     {
         if (m_UIThread.joinable())
         {
