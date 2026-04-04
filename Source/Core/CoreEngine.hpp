@@ -92,22 +92,22 @@ namespace N503::Core
 
     private:
         /// @brief 
-        std::unique_ptr<CommandQueue> m_CommandQueue;
+        std::jthread m_UIThread;    // Warning: UIスレッドは最初に宣言し破棄される順番を意識する
+
+        /// @brief 
+        std::jthread m_EventThread; // Warning: m_UIThread の後に宣言する
 
         /// @brief 
         std::unique_ptr<CommandExecutor> m_CommandExecutor;
+
+        /// @brief 
+        std::unique_ptr<CommandQueue> m_CommandQueue;
 
         /// @brief 
         std::unique_ptr<EventQueue> m_EventQueue;
 
         /// @brief 
         std::unique_ptr<DefaultMessageRouter> m_MessageRouter;
-
-        /// @brief 
-        std::jthread m_UIThread;
-
-        /// @brief 
-        std::jthread m_EventThread;
     };
 
 } // namespace N503::Core

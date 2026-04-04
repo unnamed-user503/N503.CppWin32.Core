@@ -86,7 +86,7 @@ namespace N503::Core
 
                 if (result >= WAIT_OBJECT_0 && result < (WAIT_OBJECT_0 + wakeupHandles.size()))
                 {
-                    eventDispatcher.Dispatch(*m_EventQueue.get());
+                    eventDispatcher.Dispatch(*m_EventQueue);
                 }
             }
         });
@@ -106,7 +106,7 @@ namespace N503::Core
 
             if (result >= WAIT_OBJECT_0 && result < (WAIT_OBJECT_0 + wakeupHandles.size()))
             {
-                commandDispatcher.Dispatch(*m_CommandQueue.get(), *m_CommandExecutor.get());
+                commandDispatcher.Dispatch(*m_CommandQueue, *m_CommandExecutor);
             }
 
             if (result == WAIT_OBJECT_0 + wakeupHandles.size())
